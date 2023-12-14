@@ -488,6 +488,10 @@ int main(int argc, char** argv)
 			camera.position.x += -std::sin(camera.yaw) * 0.02f;
 			camera.position.z += -std::cos(camera.yaw) * 0.02f;
 		}
+		if (keys[SDL_SCANCODE_SPACE])
+			camera.position.y += 0.02f;
+		if (keys[SDL_SCANCODE_LCTRL])
+			camera.position.y -= 0.02f;
 		if (keys[SDL_SCANCODE_ESCAPE])
 			exit = true;
 		
@@ -508,12 +512,12 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		basicShader.bind();
 		unsigned int cameraUniformLocation = glGetUniformLocation(basicShader.programId, "camera");
-		glProgramUniformMatrix4fv(basicShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f /180.0f*70.0f, 0.1f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
+		glProgramUniformMatrix4fv(basicShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f /180.0f*70.0f, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		cameraUniformLocation = glGetUniformLocation(defaultShader.programId, "camera");
-		glProgramUniformMatrix4fv(defaultShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f / 180.0f * 70.0f, 0.1f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
+		glProgramUniformMatrix4fv(defaultShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f / 180.0f * 70.0f, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
 		
 		house.draw(defaultShader);
 
