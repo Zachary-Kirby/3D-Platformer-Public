@@ -141,28 +141,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\fileloader.cpp" />
-    <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\model.cpp" />
+    <ClCompile Include="fileloader.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="source\gl3w.c" />
-    <ClCompile Include="source\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\camera.h" />
-    <ClInclude Include="source\fileloader.h" />
-    <ClInclude Include="source\math\matrix.h" />
-    <ClInclude Include="source\math\vector.h" />
-    <ClInclude Include="source\model.h" />
-    <ClInclude Include="source\shader.h" />
+    <ClInclude Include="include\fileloader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
     <None Include="default.frag" />
     <None Include="default.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="plan.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

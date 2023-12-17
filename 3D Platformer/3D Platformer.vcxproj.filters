@@ -15,39 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\main.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\gl3w.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\fileloader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\shader.cpp">
+    <ClCompile Include="fileloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\fileloader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\math\vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\camera.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\math\matrix.h">
+    <ClInclude Include="include\fileloader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,8 +35,5 @@
     <None Include="default.frag" />
     <None Include="basic.vert" />
     <None Include="basic.frag" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="plan.txt" />
   </ItemGroup>
 </Project>
