@@ -141,12 +141,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fileloader.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\fileloader.cpp" />
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\model.cpp" />
     <ClCompile Include="source\gl3w.c" />
+    <ClCompile Include="source\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\fileloader.h" />
+    <ClInclude Include="source\camera.h" />
+    <ClInclude Include="source\fileloader.h" />
+    <ClInclude Include="source\math\matrix.h" />
+    <ClInclude Include="source\math\vector.h" />
+    <ClInclude Include="source\model.h" />
+    <ClInclude Include="source\shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
@@ -155,10 +162,7 @@
     <None Include="default.vert" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Game_Structure.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Game_Structure.png" />
+    <Text Include="plan.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

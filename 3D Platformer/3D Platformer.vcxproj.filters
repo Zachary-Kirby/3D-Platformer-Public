@@ -15,18 +15,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\gl3w.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fileloader.cpp">
+    <ClCompile Include="source\fileloader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\fileloader.h">
+    <ClInclude Include="source\fileloader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\math\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\math\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -37,11 +58,6 @@
     <None Include="basic.frag" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Game_Structure.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Game_Structure.png">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <Text Include="plan.txt" />
   </ItemGroup>
 </Project>
