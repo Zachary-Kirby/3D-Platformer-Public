@@ -36,4 +36,12 @@
     <None Include="basic.vert" />
     <None Include="basic.frag" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Game_Structure.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Game_Structure.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

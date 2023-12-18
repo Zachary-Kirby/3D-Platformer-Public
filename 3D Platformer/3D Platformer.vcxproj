@@ -154,6 +154,12 @@
     <None Include="default.frag" />
     <None Include="default.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Game_Structure.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Game_Structure.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
