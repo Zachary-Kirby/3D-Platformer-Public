@@ -13,6 +13,7 @@
 #include "model.h"
 #include "camera.h"
 
+
 class Window
 {
 public:
@@ -43,11 +44,15 @@ public:
 	int h;
 };
 
+
+
 int main(int argc, char** argv)
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	Window window(1600, 900);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
+	
+	//these should all be put into an init function or something
 	int errorCode = gl3wInit();
 	if (errorCode)
 	{
@@ -62,7 +67,8 @@ int main(int argc, char** argv)
 	Shader defaultShader("default.vert", "default.frag");
 	Shader basicShader("basic.vert", "basic.frag");
 	
-	Model house("data/models/house.gltf");
+	Model house("data/models/basic_room.gltf");
+	Model sphere("data/models/sphere.gltf");
 
 	Camera camera;
 	
@@ -136,15 +142,19 @@ int main(int argc, char** argv)
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		basicShader.bind();
+		float fov{ 100.0f };
 		unsigned int cameraUniformLocation = glGetUniformLocation(basicShader.programId, "camera");
-		glProgramUniformMatrix4fv(basicShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f /180.0f*70.0f, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
+		glProgramUniformMatrix4fv(basicShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f /180.0f*fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		cameraUniformLocation = glGetUniformLocation(defaultShader.programId, "camera");
-		glProgramUniformMatrix4fv(defaultShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f / 180.0f * 70.0f, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
+		glProgramUniformMatrix4fv(defaultShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
 		
 		house.draw(defaultShader);
+
+		defaultShader.setMat4fv("camera", (Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix() * Mat4x4().translationMatrix(0.0f, 1.0f, 0.0f) * Mat4x4().scalingMatrix(0.5f)).data);
+		sphere.draw(defaultShader);
 
 
 		SDL_GL_SwapWindow(window.window);

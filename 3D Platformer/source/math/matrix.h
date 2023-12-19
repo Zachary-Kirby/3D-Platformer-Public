@@ -56,6 +56,14 @@ struct Mat4x4
 		};
 		return (Mat4x4)pitchRotation * (Mat4x4)yawRotation;
 	}
+	Mat4x4 scalingMatrix(float scale)
+	{
+		data[0] = scale;
+		data[5] = scale;
+		data[10] = scale;
+		data[15] = 1;
+		return *this;
+	}
 	Mat4x4 operator*(Mat4x4 other);
 	float& operator[](int index) { return data[index]; }
 };
