@@ -13,3 +13,11 @@ logic
 I need a physics system...
 First thing's first. I need box colliders.
 I also need to reorginize everything
+
+
+how will the physics system get its mesh information and what information does it need?
+
+for every triangle it needs:
+	vertices,
+	normals,
+	indices (determines winding order)

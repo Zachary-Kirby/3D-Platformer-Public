@@ -67,8 +67,9 @@ int main(int argc, char** argv)
 	Shader defaultShader("default.vert", "default.frag");
 	Shader basicShader("basic.vert", "basic.frag");
 	
-	Model house("data/models/basic_room.gltf");
+	Model room("data/models/basic_room.gltf");
 	Model sphere("data/models/sphere.gltf");
+	Model floor("data/models/test_floor.gltf");
 
 	Camera camera;
 	
@@ -141,21 +142,13 @@ int main(int argc, char** argv)
 		}
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		basicShader.bind();
 		float fov{ 100.0f };
-		unsigned int cameraUniformLocation = glGetUniformLocation(basicShader.programId, "camera");
-		glProgramUniformMatrix4fv(basicShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f /180.0f*fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
-		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
-		cameraUniformLocation = glGetUniformLocation(defaultShader.programId, "camera");
-		glProgramUniformMatrix4fv(defaultShader.programId, cameraUniformLocation, 1, GL_TRUE, (Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix()).data);
-		
-		house.draw(defaultShader);
-
-		defaultShader.setMat4fv("camera", (Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix() * Mat4x4().translationMatrix(0.0f, 1.0f, 0.0f) * Mat4x4().scalingMatrix(0.5f)).data);
+		Mat4x4 cameraViewMatrix = Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix();
+		//room.draw(defaultShader);
+		defaultShader.bind();
+		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(0.0f, 1.0f, 0.0f) * Mat4x4().scalingMatrix(0.5f)).data);
 		sphere.draw(defaultShader);
-
+		
 
 		SDL_GL_SwapWindow(window.window);
 		auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(mil - std::chrono::steady_clock::now());
