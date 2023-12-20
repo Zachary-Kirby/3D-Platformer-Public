@@ -40,8 +40,8 @@ class Model
 public:
 	Model(const char* path);
 	void draw(Shader& shader);
-private:
 	std::vector<Mesh> meshes;
+private:
 	std::string directory;
 	std::vector<Texture> texturesLoaded;
 

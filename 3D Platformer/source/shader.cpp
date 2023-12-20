@@ -69,3 +69,6 @@ void Shader::setMat4fv(const char* name, float* data)
 	unsigned int uniformLocation = glGetUniformLocation(programId, name);
 	glUniformMatrix4fv(uniformLocation, 1, GL_TRUE, data);
 }
+
+
+//bools use setInt

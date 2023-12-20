@@ -68,8 +68,10 @@ int main(int argc, char** argv)
 	Model room("data/models/basic_room.gltf");
 	Model sphere("data/models/sphere.gltf");
 	Model floor("data/models/test_floor.gltf");
+	MeshCollider floorCollider(floor);
 
 	Camera camera;
+	camera.position = { 0.0f, 1.0f, -2.0f };
 	
 	float verts[] = {
 		-0.5f,-0.5f, 0.0f,
@@ -79,6 +81,8 @@ int main(int argc, char** argv)
 	};
 	unsigned int indices[] = { 0, 1, 2, 2, 3, 0};
 	
+	Vector3 sphereLocation{ 0.0f, 2.0f, 0.0f };
+	float sphereRadius{ 0.2f };
 
 	unsigned int vao, vbo, ebo;
 	glGenVertexArrays(1, &vao);
@@ -96,6 +100,7 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 	glEnableVertexAttribArray(0);
 
+	
 	
 	bool exit{ false };
 	while (!exit)
@@ -118,9 +123,33 @@ int main(int argc, char** argv)
 			camera.position.x += -std::sin(camera.yaw) * 0.02f;
 			camera.position.z += -std::cos(camera.yaw) * 0.02f;
 		}
+		
+		if (keys[SDL_SCANCODE_J]) {
+			sphereLocation.x += -std::cos(camera.yaw) * 0.02f;
+			sphereLocation.z += std::sin(camera.yaw) * 0.02f;
+		}
+		if (keys[SDL_SCANCODE_L]) {
+			sphereLocation.x += std::cos(camera.yaw) * 0.02f;
+			sphereLocation.z += -std::sin(camera.yaw) * 0.02f;
+		}
+		if (keys[SDL_SCANCODE_I]) {
+			sphereLocation.x += std::sin(camera.yaw) * 0.02f;
+			sphereLocation.z += std::cos(camera.yaw) * 0.02f;
+		}
+		if (keys[SDL_SCANCODE_K]) {
+			sphereLocation.x += -std::sin(camera.yaw) * 0.02f;
+			sphereLocation.z += -std::cos(camera.yaw) * 0.02f;
+		}
+		if (keys[SDL_SCANCODE_U]) {
+			sphereLocation.y -= 0.02;
+		}
+		if (keys[SDL_SCANCODE_O]) {
+			sphereLocation.y += 0.02;
+		}
+
 		if (keys[SDL_SCANCODE_SPACE])
 			camera.position.y += 0.02f;
-		if (keys[SDL_SCANCODE_LCTRL])
+		if (keys[SDL_SCANCODE_LSHIFT])
 			camera.position.y -= 0.02f;
 		if (keys[SDL_SCANCODE_ESCAPE])
 			exit = true;
@@ -134,8 +163,25 @@ int main(int argc, char** argv)
 				exit = true;
 			if (sdlEvent.type == SDL_MOUSEMOTION)
 			{
-				camera.yaw += sdlEvent.motion.xrel / (2.0f * 3.14f * 100.0f);
-				camera.pitch += sdlEvent.motion.yrel / (2.0f * 3.14f * 100.0f);
+				if (keys[SDL_SCANCODE_LCTRL])
+				{
+					sphereLocation.x += std::cos(camera.yaw) * 0.002f * sdlEvent.motion.xrel;
+					sphereLocation.z += -std::sin(camera.yaw) * 0.002f * sdlEvent.motion.xrel;
+					sphereLocation.y += -0.002f * sdlEvent.motion.yrel;
+				}
+				else
+				{
+					camera.yaw += sdlEvent.motion.xrel / (2.0f * 3.14f * 100.0f);
+					camera.pitch += sdlEvent.motion.yrel / (2.0f * 3.14f * 100.0f);
+				}
+			}
+			if (sdlEvent.type == SDL_MOUSEWHEEL)
+			{
+				if (keys[SDL_SCANCODE_LCTRL])
+				{
+					sphereLocation.x += std::sin(camera.yaw) * 0.08f * sdlEvent.wheel.y;
+					sphereLocation.z += std::cos(camera.yaw) * 0.08f * sdlEvent.wheel.y;
+				}
 			}
 		}
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
@@ -144,9 +190,13 @@ int main(int argc, char** argv)
 		Mat4x4 cameraViewMatrix = Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix();
 		//room.draw(defaultShader);
 		defaultShader.bind();
-		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(0.0f, 1.0f, 0.0f) * Mat4x4().scalingMatrix(0.5f)).data);
+		
+		defaultShader.setInt("turnGreen", floorCollider.collideSphere(sphereLocation, sphereRadius));
+		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(sphereLocation.x, sphereLocation.y, sphereLocation.z) * Mat4x4().scalingMatrix(sphereRadius)).data);
 		sphere.draw(defaultShader);
+
 		defaultShader.setMat4fv("camera", cameraViewMatrix.data);
+		defaultShader.setInt("turnGreen", 0);
 		floor.draw(defaultShader);
 
 
