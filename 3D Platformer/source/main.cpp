@@ -12,7 +12,7 @@
 #include "shader.h"
 #include "model.h"
 #include "camera.h"
-
+#include "colliders.h"
 
 class Window
 {
@@ -44,8 +44,6 @@ public:
 	int h;
 };
 
-
-
 int main(int argc, char** argv)
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -74,7 +72,7 @@ int main(int argc, char** argv)
 	Camera camera;
 	
 	float verts[] = {
-		-0.5f,-0.5f, 0.0f, 
+		-0.5f,-0.5f, 0.0f,
 		 0.5f,-0.5f, 0.0f,
 		 0.5f, 0.5f, 0.0f,
 		-0.5f, 0.5f, 0.0f
@@ -148,7 +146,9 @@ int main(int argc, char** argv)
 		defaultShader.bind();
 		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(0.0f, 1.0f, 0.0f) * Mat4x4().scalingMatrix(0.5f)).data);
 		sphere.draw(defaultShader);
-		
+		defaultShader.setMat4fv("camera", cameraViewMatrix.data);
+		floor.draw(defaultShader);
+
 
 		SDL_GL_SwapWindow(window.window);
 		auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(mil - std::chrono::steady_clock::now());

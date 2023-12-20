@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\colliders.cpp" />
     <ClCompile Include="source\fileloader.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\model.cpp" />
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\camera.h" />
+    <ClInclude Include="source\colliders.h" />
     <ClInclude Include="source\fileloader.h" />
     <ClInclude Include="source\math\matrix.h" />
     <ClInclude Include="source\math\vector.h" />

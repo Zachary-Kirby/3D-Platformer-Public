@@ -30,6 +30,9 @@
     <ClCompile Include="source\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\colliders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\fileloader.h">
@@ -50,14 +53,14 @@
     <ClInclude Include="source\math\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\colliders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="default.vert" />
     <None Include="default.frag" />
     <None Include="basic.vert" />
     <None Include="basic.frag" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="plan.txt" />
   </ItemGroup>
 </Project>
