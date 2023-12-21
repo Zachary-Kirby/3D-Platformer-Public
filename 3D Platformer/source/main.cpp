@@ -126,26 +126,26 @@ int main(int argc, char** argv)
 		}
 		
 		if (keys[SDL_SCANCODE_J]) {
-			sphereLocation.x += -std::cos(camera.yaw) * 0.02f;
-			sphereLocation.z += std::sin(camera.yaw) * 0.02f;
+			playerVelocity.x += -std::cos(camera.yaw) * 0.02f;
+			playerVelocity.z += std::sin(camera.yaw) * 0.02f;
 		}
 		if (keys[SDL_SCANCODE_L]) {
-			sphereLocation.x += std::cos(camera.yaw) * 0.02f;
-			sphereLocation.z += -std::sin(camera.yaw) * 0.02f;
+			playerVelocity.x += std::cos(camera.yaw) * 0.02f;
+			playerVelocity.z += -std::sin(camera.yaw) * 0.02f;
 		}
 		if (keys[SDL_SCANCODE_I]) {
-			sphereLocation.x += std::sin(camera.yaw) * 0.02f;
-			sphereLocation.z += std::cos(camera.yaw) * 0.02f;
+			playerVelocity.x += std::sin(camera.yaw) * 0.02f;
+			playerVelocity.z += std::cos(camera.yaw) * 0.02f;
 		}
 		if (keys[SDL_SCANCODE_K]) {
-			sphereLocation.x += -std::sin(camera.yaw) * 0.02f;
-			sphereLocation.z += -std::cos(camera.yaw) * 0.02f;
+			playerVelocity.x += -std::sin(camera.yaw) * 0.02f;
+			playerVelocity.z += -std::cos(camera.yaw) * 0.02f;
 		}
 		if (keys[SDL_SCANCODE_U]) {
-			sphereLocation.y -= 0.02;
+			playerVelocity.y -= 0.02;
 		}
 		if (keys[SDL_SCANCODE_O]) {
-			sphereLocation.y += 0.02;
+			playerVelocity.y += 0.02;
 		}
 
 		if (keys[SDL_SCANCODE_SPACE])
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		playerVelocity.y -= 0.001f;
+		playerVelocity.y -= 0.005f;
 		sphereLocation += playerVelocity;
 
 		CollisionPoint collisionPoint = roomCollider.collideSphere(sphereLocation, sphereRadius);
