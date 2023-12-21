@@ -44,9 +44,16 @@ public:
 	int h;
 };
 
+#define pi 3.1415926535897932384626433832795
+static float radians(float degrees) { return degrees / 180.0f * pi; }
+
+/*
+Now that the prototype is in a stable state it is time to clean it up
+*/
+
 int main(int argc, char** argv)
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 	Window window(1600, 900);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	
@@ -72,7 +79,7 @@ int main(int argc, char** argv)
 	MeshCollider floorCollider(floor);
 
 	Camera camera;
-	camera.position = { 0.0f, 1.0f, -2.0f };
+	camera.position = { 0.0f, 2.0f, -2.0f };
 	
 	float verts[] = {
 		-0.5f,-0.5f, 0.0f,
@@ -83,7 +90,7 @@ int main(int argc, char** argv)
 	unsigned int indices[] = { 0, 1, 2, 2, 3, 0};
 	
 	Vector3 sphereLocation{ 0.0f, 2.0f, 0.0f };
-	float sphereRadius{ 0.2f };
+	float sphereRadius{ 0.3f };
 
 	unsigned int vao, vbo, ebo;
 	glGenVertexArrays(1, &vao);
@@ -102,44 +109,63 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(0);
 
 	Vector3 playerVelocity;
-	
+	Vector3 cameraVelocity;
+	float cameraSpeed = 0.01f;
+	bool cameraGrounded = false;
+
+	SDL_GameController* controller = NULL;
+	std::cout << SDL_NumJoysticks() << "\n";
 	bool exit{ false };
 	while (!exit)
 	{
-		
+		controller = SDL_GameControllerOpen(0);
+		if (controller)
+		{
+			float controllerLX = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f * 7.0f)) / 7.0f;
+			float controllerLY = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f * 7.0f)) / 7.0f;
+			cameraVelocity.x += -std::cos(camera.yaw) * controllerLX * cameraSpeed;
+			cameraVelocity.z += std::sin(camera.yaw) * controllerLX * cameraSpeed;
+			cameraVelocity.x += std::sin(camera.yaw) * controllerLY * cameraSpeed;
+			cameraVelocity.z += std::cos(camera.yaw) * controllerLY * cameraSpeed;
+
+			float controllerRX = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX) / 32768.0f * 7.0f)) / 7.0f;
+			float controllerRY = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY) / 32768.0f * 7.0f)) / 7.0f;
+			camera.yaw += -controllerRX*std::abs(controllerRX) / 180.0f * 3.14 * 8.0f;
+			camera.pitch += -controllerRY*std::abs(controllerRY) / 180.0f * 3.14 * 8.0f;
+		}
 		const unsigned char* keys = SDL_GetKeyboardState(NULL);
 		if (keys[SDL_SCANCODE_A]) {
-			camera.position.x += -std::cos(camera.yaw) * 0.02f;
-			camera.position.z +=  std::sin(camera.yaw) * 0.02f;
+			cameraVelocity.x += -std::cos(camera.yaw) * cameraSpeed;
+			cameraVelocity.z +=  std::sin(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_D]) {
-			camera.position.x +=  std::cos(camera.yaw) * 0.02f;
-			camera.position.z += -std::sin(camera.yaw) * 0.02f;
+			cameraVelocity.x +=  std::cos(camera.yaw) * cameraSpeed;
+			cameraVelocity.z += -std::sin(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_W]) {
-			camera.position.x += std::sin(camera.yaw) * 0.02f;
-			camera.position.z += std::cos(camera.yaw) * 0.02f;
+			cameraVelocity.x += std::sin(camera.yaw) * cameraSpeed;
+			cameraVelocity.z += std::cos(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_S]) {
-			camera.position.x += -std::sin(camera.yaw) * 0.02f;
-			camera.position.z += -std::cos(camera.yaw) * 0.02f;
+			cameraVelocity.x += -std::sin(camera.yaw) * cameraSpeed;
+			cameraVelocity.z += -std::cos(camera.yaw) * cameraSpeed;
 		}
 		
 		if (keys[SDL_SCANCODE_J]) {
-			playerVelocity.x += -std::cos(camera.yaw) * 0.02f;
-			playerVelocity.z += std::sin(camera.yaw) * 0.02f;
+			playerVelocity.x += -std::cos(camera.yaw) * cameraSpeed;
+			playerVelocity.z += std::sin(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_L]) {
-			playerVelocity.x += std::cos(camera.yaw) * 0.02f;
-			playerVelocity.z += -std::sin(camera.yaw) * 0.02f;
+			playerVelocity.x += std::cos(camera.yaw) * cameraSpeed;
+			playerVelocity.z += -std::sin(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_I]) {
-			playerVelocity.x += std::sin(camera.yaw) * 0.02f;
-			playerVelocity.z += std::cos(camera.yaw) * 0.02f;
+			playerVelocity.x += std::sin(camera.yaw) * cameraSpeed;
+			playerVelocity.z += std::cos(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_K]) {
-			playerVelocity.x += -std::sin(camera.yaw) * 0.02f;
-			playerVelocity.z += -std::cos(camera.yaw) * 0.02f;
+			playerVelocity.x += -std::sin(camera.yaw) * cameraSpeed;
+			playerVelocity.z += -std::cos(camera.yaw) * cameraSpeed;
 		}
 		if (keys[SDL_SCANCODE_U]) {
 			playerVelocity.y -= 0.02;
@@ -148,10 +174,15 @@ int main(int argc, char** argv)
 			playerVelocity.y += 0.02;
 		}
 
-		if (keys[SDL_SCANCODE_SPACE])
-			camera.position.y += 0.02f;
+		if (keys[SDL_SCANCODE_SPACE] && cameraGrounded)
+			cameraVelocity.y += 0.1f;
+		if (controller)
+		{
+			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A) && cameraGrounded)
+				cameraVelocity.y += 0.1f;
+		}
 		if (keys[SDL_SCANCODE_LSHIFT])
-			camera.position.y -= 0.02f;
+			cameraVelocity.y -= 0.02f;
 		if (keys[SDL_SCANCODE_ESCAPE])
 			exit = true;
 		
@@ -201,6 +232,34 @@ int main(int argc, char** argv)
 
 			}
 		}
+		cameraGrounded = false;
+		cameraVelocity.x *= 0.8f;
+		cameraVelocity.z *= 0.8f;
+		cameraVelocity.y -= 0.005f;
+		camera.position += cameraVelocity;
+		collisionPoint = roomCollider.collideSphere(camera.position, sphereRadius);
+		{
+			float distance = (camera.position - collisionPoint.position).length();
+			if (distance < sphereRadius)
+			{
+				Vector3 pushDirection = (camera.position - collisionPoint.position) / distance;
+				camera.position -= pushDirection * (distance - sphereRadius);
+				//|1||2|cos()=1 dot 2	
+				if (pushDirection.dot(cameraVelocity) < 0)
+				{
+					if (std::acosf(pushDirection.y) < radians(45.0f))
+					{
+						cameraVelocity.y = 0;
+						cameraGrounded = true;
+					}
+					else
+						cameraVelocity -= pushDirection.dot(cameraVelocity) * pushDirection;
+
+				}
+
+
+			}
+		}
 
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -212,20 +271,21 @@ int main(int argc, char** argv)
 		defaultShader.setMat4fv("camera", cameraViewMatrix.data);
 		room.draw(defaultShader);
 		
-		//defaultShader.setInt("turnGreen", roomCollider.isCollidingWithSphere(sphereLocation, sphereRadius));
 		defaultShader.setInt("turnGreen", 0);
 		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(sphereLocation.x, sphereLocation.y, sphereLocation.z) * Mat4x4().scalingMatrix(sphereRadius)).data);
 		sphere.draw(defaultShader);
 
+		//DRAW THE DEBUG FLOOR
 		//defaultShader.setMat4fv("camera", cameraViewMatrix.data);
 		//defaultShader.setInt("turnGreen", 0);
 		//floor.draw(defaultShader);
 
-		glDisable(GL_DEPTH_TEST);
-		defaultShader.setInt("turnGreen", 1);
-		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(collisionPoint.position.x, collisionPoint.position.y, collisionPoint.position.z) * Mat4x4().scalingMatrix(0.05f)).data);
-		sphere.draw(defaultShader);
-		glEnable(GL_DEPTH_TEST);
+		//DEBUG THE COLLISION POINT
+		//glDisable(GL_DEPTH_TEST);
+		//defaultShader.setInt("turnGreen", 1);
+		//defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(collisionPoint.position.x, collisionPoint.position.y, collisionPoint.position.z) * Mat4x4().scalingMatrix(0.05f)).data);
+		//sphere.draw(defaultShader);
+		//glEnable(GL_DEPTH_TEST);
 
 
 		SDL_GL_SwapWindow(window.window);

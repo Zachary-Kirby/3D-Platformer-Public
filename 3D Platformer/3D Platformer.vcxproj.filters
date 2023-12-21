@@ -62,5 +62,6 @@
     <None Include="default.frag" />
     <None Include="basic.vert" />
     <None Include="basic.frag" />
+    <None Include="..\..\..\..\..\Libs\assimp-master\assimp-master\ASSIMP LICENSE" />
   </ItemGroup>
 </Project>
