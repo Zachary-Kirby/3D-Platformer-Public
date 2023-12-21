@@ -11,11 +11,18 @@ struct ColliderVertex
 	Vector3 normal;
 };
 
+struct CollisionPoint
+{
+	Vector3 position;
+	float distance;
+};
+
 class MeshCollider
 {
 public:
 	MeshCollider(const Model& modelRefrence);
-	bool collideSphere(Vector3 position, float radius);
+	bool isCollidingWithSphere(Vector3 position, float radius);
+	CollisionPoint collideSphere(Vector3 position, float radius);
 private:
 	std::vector<ColliderVertex> vertices;
 	std::vector<unsigned int> indices;

@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 	Shader basicShader("basic.vert", "basic.frag");
 	
 	Model room("data/models/basic_room.gltf");
+	MeshCollider roomCollider(room);
 	Model sphere("data/models/sphere.gltf");
 	Model floor("data/models/test_floor.gltf");
 	MeshCollider floorCollider(floor);
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 	glEnableVertexAttribArray(0);
 
-	
+	Vector3 playerVelocity;
 	
 	bool exit{ false };
 	while (!exit)
@@ -184,20 +185,47 @@ int main(int argc, char** argv)
 				}
 			}
 		}
+
+		playerVelocity.y -= 0.001f;
+		sphereLocation += playerVelocity;
+
+		CollisionPoint collisionPoint = roomCollider.collideSphere(sphereLocation, sphereRadius);
+		{
+			float distance = (sphereLocation - collisionPoint.position).length();
+			if (distance < sphereRadius)
+			{
+				Vector3 pushDirection = (sphereLocation - collisionPoint.position) / distance;
+				sphereLocation -= pushDirection * (distance - sphereRadius );
+				if (pushDirection.dot(playerVelocity) < 0)
+					playerVelocity -= pushDirection.dot(playerVelocity) * pushDirection;
+
+			}
+		}
+
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		float fov{ 100.0f };
 		Mat4x4 cameraViewMatrix = Mat4x4().perspectiveMatrix(3.14f / 180.0f * fov, 0.125f, 100.0f, ((float)window.w / (float)window.h)) * camera.getCameraMatrix();
-		//room.draw(defaultShader);
 		defaultShader.bind();
 		
-		defaultShader.setInt("turnGreen", floorCollider.collideSphere(sphereLocation, sphereRadius));
+		defaultShader.setInt("turnGreen", 0);
+		defaultShader.setMat4fv("camera", cameraViewMatrix.data);
+		room.draw(defaultShader);
+		
+		//defaultShader.setInt("turnGreen", roomCollider.isCollidingWithSphere(sphereLocation, sphereRadius));
+		defaultShader.setInt("turnGreen", 0);
 		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(sphereLocation.x, sphereLocation.y, sphereLocation.z) * Mat4x4().scalingMatrix(sphereRadius)).data);
 		sphere.draw(defaultShader);
 
-		defaultShader.setMat4fv("camera", cameraViewMatrix.data);
-		defaultShader.setInt("turnGreen", 0);
-		floor.draw(defaultShader);
+		//defaultShader.setMat4fv("camera", cameraViewMatrix.data);
+		//defaultShader.setInt("turnGreen", 0);
+		//floor.draw(defaultShader);
+
+		glDisable(GL_DEPTH_TEST);
+		defaultShader.setInt("turnGreen", 1);
+		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(collisionPoint.position.x, collisionPoint.position.y, collisionPoint.position.z) * Mat4x4().scalingMatrix(0.05f)).data);
+		sphere.draw(defaultShader);
+		glEnable(GL_DEPTH_TEST);
 
 
 		SDL_GL_SwapWindow(window.window);
