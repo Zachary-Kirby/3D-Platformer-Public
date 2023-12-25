@@ -1,6 +1,7 @@
 #include "colliders.h"
 #include <cmath>
 #include <iostream>
+#include <cassert>
 
 MeshCollider::MeshCollider(const Model& modelRefrence)
 {
@@ -74,8 +75,8 @@ bool MeshCollider::isCollidingWithSphere(Vector3 position, float radius)
 
 CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
 {
-	float totalClosestDistance = -1;
-	Vector3 totalClosestPoint;
+	CollisionPoint closestCollisionPoint;
+
 	for (unsigned int i{ 0 }; i < indices.size(); i += 3)
 	{
 		Vector3& point1 = vertices[indices[i]].position;
@@ -124,14 +125,16 @@ CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
 
 		//get the distance to the point and determine if it is the closest
 		float closestDistance = (position - closestPoint).length();
-		if (closestDistance < totalClosestDistance || totalClosestDistance < 0)
+		if (closestDistance < closestCollisionPoint.distance || closestCollisionPoint.distance < 0)
 		{
-			totalClosestPoint = closestPoint;
-			totalClosestDistance = closestDistance;
+			closestCollisionPoint.position = closestPoint;
+			closestCollisionPoint.distance = closestDistance;
+			closestCollisionPoint.normal   = normal;
+			closestCollisionPoint.failed   = false;
 		}
 	}
 	
-	return { totalClosestPoint, totalClosestDistance};
+	return closestCollisionPoint;
 }
 
 
@@ -167,3 +170,18 @@ if (distanceFromBoundary > 0)
 if ((position - closestPoint).length() <= radius)
 	return true;
 */
+
+
+//make sure direction is normalized
+CollisionPoint rayPlaneIntersection(Vector3 start, Vector3 direction, Vector3 planePoint, Vector3 planeNormal)
+{
+	CollisionPoint intersectionPoint;
+	if (planePoint.dot(planeNormal) == 0) //there is also the case where the start point lies in the plane but That will be too rare
+		return CollisionPoint();
+	float t = (start - planePoint).dot(planeNormal) / (direction.dot(planeNormal));
+	intersectionPoint.position = start + direction * t;
+	intersectionPoint.distance = t;
+	intersectionPoint.failed = false;
+	intersectionPoint.normal = planeNormal;
+	return intersectionPoint;
+}

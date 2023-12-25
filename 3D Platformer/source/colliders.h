@@ -14,7 +14,9 @@ struct ColliderVertex
 struct CollisionPoint
 {
 	Vector3 position;
-	float distance;
+	Vector3 normal;
+	float distance = -1; //this is -1 so code knows that this collision point has not been filled with data yet
+	bool failed{ true };
 };
 
 class MeshCollider
@@ -27,3 +29,5 @@ private:
 	std::vector<ColliderVertex> vertices;
 	std::vector<unsigned int> indices;
 };
+
+CollisionPoint rayPlaneIntersection(Vector3 start, Vector3 direction, Vector3 planePoint, Vector3 planeNormal);

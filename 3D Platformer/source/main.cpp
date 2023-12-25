@@ -242,9 +242,31 @@ int main(int argc, char** argv)
 			float distance = (camera.position - collisionPoint.position).length();
 			if (distance < sphereRadius)
 			{
+				/*
+				* 1. move
+				* 2. check for collision
+				* 3. resolve collision (this may not need all of the information provided by the current collideSphere function, just a refrence of what triangle is colliding for normal information and the like)
+				* (this isn't perfectly accurate but let's see if it works well)
+				* 1. get point furthest in the negative normal direction on the sphere
+				* 2. cast a ray to the plan of the triangle in the negative move direction 
+				* 3. move sphere by the length of the ray in the negative move direction
+				*/
+				/*
+				Vector3 sphereCollisionPoint = camera.position - collisionPoint.normal * sphereRadius;
+				Vector3 moveDirection = cameraVelocity.normalized();
+				CollisionPoint planeCollisionPoint = rayPlaneIntersection(sphereCollisionPoint, moveDirection, collisionPoint.position, collisionPoint.normal);
+				camera.position -= (planeCollisionPoint.distance) * moveDirection;
+				cameraVelocity -= collisionPoint.normal.dot(cameraVelocity) * collisionPoint.normal;
+				camera.position += cameraVelocity.normalized() * planeCollisionPoint.distance; //the lost movement distance needs to go somewhere? except the movement 180 with the normal
+				if (std::acosf(collisionPoint.normal.dot(moveDirection)) < radians(45.0f))
+				{
+					cameraGrounded = true;
+				}
+				*/
+				
 				Vector3 pushDirection = (camera.position - collisionPoint.position) / distance;
 				camera.position -= pushDirection * (distance - sphereRadius);
-				//|1||2|cos()=1 dot 2	
+				
 				if (pushDirection.dot(cameraVelocity) < 0)
 				{
 					if (std::acosf(pushDirection.y) < radians(45.0f))
@@ -254,8 +276,8 @@ int main(int argc, char** argv)
 					}
 					else
 						cameraVelocity -= pushDirection.dot(cameraVelocity) * pushDirection;
-
 				}
+				
 
 
 			}
