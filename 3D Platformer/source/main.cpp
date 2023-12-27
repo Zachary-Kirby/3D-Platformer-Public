@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <cmath>
+
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "GL/gl3w.h"
@@ -42,6 +44,41 @@ public:
 	SDL_GLContext glContext;
 	int w;
 	int h;
+};
+
+struct DebugMesh
+{
+	std::vector<Vector3> vertices;
+	unsigned int vao, vbo;
+	DebugMesh()
+	{
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glBindVertexArray(vao);
+		
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+		
+	}
+	~DebugMesh()
+	{
+		glDeleteVertexArrays(1, &vao);
+		glDeleteBuffers(1, &vbo);
+	}
+	void updateData()
+	{
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * vertices.size(), vertices.data(), GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), (void*)0);
+	}
+	void drawLines()
+	{
+		updateData();
+		glLineWidth(3.0f);
+		glDrawArrays(GL_LINES , 0, vertices.size());
+		glBindVertexArray(0);
+	}
 };
 
 #define pi 3.1415926535897932384626433832795
@@ -89,8 +126,15 @@ int main(int argc, char** argv)
 	};
 	unsigned int indices[] = { 0, 1, 2, 2, 3, 0};
 	
-	Vector3 sphereLocation{ 0.0f, 2.0f, 0.0f };
-	float sphereRadius{ 0.3f };
+	
+	DebugMesh debugLines;
+	debugLines.vertices.push_back({ 0.0f,1.0f,0.0f });
+	debugLines.vertices.push_back({ 0.0f,0.0f,0.0f });
+	
+	
+
+	Vector3 sphereLocation{ 0.0f, 1.0f, 0.0f };
+	float sphereRadius{ 0.5f };
 
 	unsigned int vao, vbo, ebo;
 	glGenVertexArrays(1, &vao);
@@ -110,7 +154,9 @@ int main(int argc, char** argv)
 
 	Vector3 playerVelocity;
 	Vector3 cameraVelocity;
-	float cameraSpeed = 0.01f;
+	Vector3 cameraFloorNormal{ 0.0f, 2.0f, 0.0f };
+	const float cameraSpeed = 0.02f;
+	const float MAXSPEED = 0.05f*2;
 	bool cameraGrounded = false;
 
 	SDL_GameController* controller = NULL;
@@ -119,38 +165,61 @@ int main(int argc, char** argv)
 	while (!exit)
 	{
 		controller = SDL_GameControllerOpen(0);
-		if (controller)
-		{
-			float controllerLX = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f * 7.0f)) / 7.0f;
-			float controllerLY = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f * 7.0f)) / 7.0f;
-			cameraVelocity.x += -std::cos(camera.yaw) * controllerLX * cameraSpeed;
-			cameraVelocity.z += std::sin(camera.yaw) * controllerLX * cameraSpeed;
-			cameraVelocity.x += std::sin(camera.yaw) * controllerLY * cameraSpeed;
-			cameraVelocity.z += std::cos(camera.yaw) * controllerLY * cameraSpeed;
-
-			float controllerRX = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX) / 32768.0f * 7.0f)) / 7.0f;
-			float controllerRY = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY) / 32768.0f * 7.0f)) / 7.0f;
-			camera.yaw += -controllerRX*std::abs(controllerRX) / 180.0f * 3.14 * 8.0f;
-			camera.pitch += -controllerRY*std::abs(controllerRY) / 180.0f * 3.14 * 8.0f;
-		}
 		const unsigned char* keys = SDL_GetKeyboardState(NULL);
-		if (keys[SDL_SCANCODE_A]) {
-			cameraVelocity.x += -std::cos(camera.yaw) * cameraSpeed;
-			cameraVelocity.z +=  std::sin(camera.yaw) * cameraSpeed;
-		}
-		if (keys[SDL_SCANCODE_D]) {
-			cameraVelocity.x +=  std::cos(camera.yaw) * cameraSpeed;
-			cameraVelocity.z += -std::sin(camera.yaw) * cameraSpeed;
-		}
-		if (keys[SDL_SCANCODE_W]) {
-			cameraVelocity.x += std::sin(camera.yaw) * cameraSpeed;
-			cameraVelocity.z += std::cos(camera.yaw) * cameraSpeed;
-		}
-		if (keys[SDL_SCANCODE_S]) {
-			cameraVelocity.x += -std::sin(camera.yaw) * cameraSpeed;
-			cameraVelocity.z += -std::cos(camera.yaw) * cameraSpeed;
+		
+		{
+			Vector2 oldVelocity = Vector2{ cameraVelocity.x, cameraVelocity.z };
+			if (controller)
+			{
+				float controllerLX = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f * 7.0f)) / 7.0f;
+				float controllerLY = (- (int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f * 7.0f)) / 7.0f;
+				cameraVelocity.x += -std::cos(camera.yaw) * controllerLX * cameraSpeed;
+				cameraVelocity.z += std::sin(camera.yaw) * controllerLX * cameraSpeed;
+				cameraVelocity.x += std::sin(camera.yaw) * controllerLY * cameraSpeed;
+				cameraVelocity.z += std::cos(camera.yaw) * controllerLY * cameraSpeed;
+
+				float controllerRX = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX) / 32768.0f * 7.0f)) / 7.0f;
+				float controllerRY = (-(int)(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY) / 32768.0f * 7.0f)) / 7.0f;
+				camera.yaw += -controllerRX*std::abs(controllerRX) / 180.0f * 3.14 * 8.0f;
+				camera.pitch += -controllerRY*std::abs(controllerRY) / 180.0f * 3.14 * 8.0f;
+			}
+
+			if (keys[SDL_SCANCODE_A]) {
+				cameraVelocity.x += -std::cos(camera.yaw) * cameraSpeed;
+				cameraVelocity.z += std::sin(camera.yaw) * cameraSpeed;
+				
+			}
+			if (keys[SDL_SCANCODE_D]) {
+				cameraVelocity.x += std::cos(camera.yaw) * cameraSpeed;
+				cameraVelocity.z += -std::sin(camera.yaw) * cameraSpeed;
+				
+			}
+			if (keys[SDL_SCANCODE_W]) {
+				float moveX = std::sin(camera.yaw) * cameraSpeed;
+				float moveZ = std::cos(camera.yaw) * cameraSpeed;
+				cameraVelocity.x += moveX;
+				cameraVelocity.z += moveZ;
+			}
+			if (keys[SDL_SCANCODE_S]) {
+				cameraVelocity.x += -std::sin(camera.yaw) * cameraSpeed;
+				cameraVelocity.z += -std::cos(camera.yaw) * cameraSpeed;
+				
+			}
+			Vector2 newVelocity = Vector2{cameraVelocity.x, cameraVelocity.z};
+			
+			if (oldVelocity.length() < newVelocity.length() && newVelocity.length() > MAXSPEED)
+			{
+				if (oldVelocity.length() > MAXSPEED)
+					newVelocity = newVelocity.normalized() * oldVelocity.length();
+				else
+					newVelocity = newVelocity.normalized() * MAXSPEED;
+				cameraVelocity.x = newVelocity.x;
+				cameraVelocity.z = newVelocity.y;
+			}
 		}
 		
+		
+
 		if (keys[SDL_SCANCODE_J]) {
 			playerVelocity.x += -std::cos(camera.yaw) * cameraSpeed;
 			playerVelocity.z += std::sin(camera.yaw) * cameraSpeed;
@@ -232,57 +301,63 @@ int main(int argc, char** argv)
 
 			}
 		}
+
+		bool playerFriction = true;
 		cameraGrounded = false;
-		cameraVelocity.x *= 0.8f;
-		cameraVelocity.z *= 0.8f;
 		cameraVelocity.y -= 0.005f;
 		camera.position += cameraVelocity;
-		collisionPoint = roomCollider.collideSphere(camera.position, sphereRadius);
+		cameraFloorNormal = { 0.0f,1.0f,0.0f };
+		for (int i{0}; i < 3; i++)
 		{
-			float distance = (camera.position - collisionPoint.position).length();
-			if (distance < sphereRadius)
+			collisionPoint = roomCollider.collideSphere(camera.position, sphereRadius);
 			{
-				/*
-				* 1. move
-				* 2. check for collision
-				* 3. resolve collision (this may not need all of the information provided by the current collideSphere function, just a refrence of what triangle is colliding for normal information and the like)
-				* (this isn't perfectly accurate but let's see if it works well)
-				* 1. get point furthest in the negative normal direction on the sphere
-				* 2. cast a ray to the plan of the triangle in the negative move direction 
-				* 3. move sphere by the length of the ray in the negative move direction
-				*/
-				/*
-				Vector3 sphereCollisionPoint = camera.position - collisionPoint.normal * sphereRadius;
-				Vector3 moveDirection = cameraVelocity.normalized();
-				CollisionPoint planeCollisionPoint = rayPlaneIntersection(sphereCollisionPoint, moveDirection, collisionPoint.position, collisionPoint.normal);
-				camera.position -= (planeCollisionPoint.distance) * moveDirection;
-				cameraVelocity -= collisionPoint.normal.dot(cameraVelocity) * collisionPoint.normal;
-				camera.position += cameraVelocity.normalized() * planeCollisionPoint.distance; //the lost movement distance needs to go somewhere? except the movement 180 with the normal
-				if (std::acosf(collisionPoint.normal.dot(moveDirection)) < radians(45.0f))
+				float distance = (camera.position - collisionPoint.position).length();
+				if (distance <=  sphereRadius)
 				{
-					cameraGrounded = true;
-				}
-				*/
 				
-				Vector3 pushDirection = (camera.position - collisionPoint.position) / distance;
-				camera.position -= pushDirection * (distance - sphereRadius);
-				
-				if (pushDirection.dot(cameraVelocity) < 0)
-				{
-					if (std::acosf(pushDirection.y) < radians(45.0f))
+					Vector3 pushDirection = (camera.position - collisionPoint.position) / distance;
+					bool onEdge = std::acosf(pushDirection.dot(collisionPoint.normal)) >= radians(0.1f);
+					//note the I can tell if the point lies on the boundary by doing a check between the normal of the triangle and the push direction. If they don't point the same directon it's on the edge
+					if (pushDirection.dot(cameraVelocity) < 0)
 					{
-						cameraVelocity.y = 0;
-						cameraGrounded = true;
+					
+						if (!onEdge && std::acosf(pushDirection.y) <= radians(45.0f))
+						{
+							CollisionPoint playerSnapPoint{ rayPlaneIntersection(camera.position + collisionPoint.normal * -sphereRadius, Vector3{ 0.0f, 1.0f, 0.0f }, collisionPoint.position, collisionPoint.normal) };
+							if (!playerSnapPoint.failed)
+							{
+								camera.position.y += playerSnapPoint.distance;
+								cameraVelocity.y = 0;
+								cameraGrounded = true;
+								cameraFloorNormal = collisionPoint.normal;
+								cameraVelocity -= collisionPoint.normal.dot(cameraVelocity) * collisionPoint.normal;
+							}
+						}
+						else
+						{
+							//only make it slippery off the edge not along the edge
+							Vector3 edgeNormal = Vector3{ pushDirection.x, 0, pushDirection.z }.normalized();
+							Vector3 edgeDirection = Vector3{-pushDirection.z, 0, pushDirection.x}.normalized();
+							cameraVelocity -= edgeDirection * edgeDirection.dot(cameraVelocity) * 0.8f;
+							if (edgeNormal.dot(cameraVelocity) < 0)
+								cameraVelocity -= edgeNormal * edgeNormal.dot(cameraVelocity) * 0.8f;
+							playerFriction = false;
+							cameraVelocity -= pushDirection.dot(cameraVelocity) * pushDirection;
+							camera.position -= pushDirection * (distance - sphereRadius);
+						}
 					}
-					else
-						cameraVelocity -= pushDirection.dot(cameraVelocity) * pushDirection;
+					
+
+
 				}
-				
-
-
 			}
+		
 		}
-
+		if (playerFriction)
+		{
+			cameraVelocity.x *= 0.8f;
+			cameraVelocity.z *= 0.8f;
+		}
 		glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		float fov{ 100.0f };
@@ -296,6 +371,16 @@ int main(int argc, char** argv)
 		defaultShader.setInt("turnGreen", 0);
 		defaultShader.setMat4fv("camera", (cameraViewMatrix * Mat4x4().translationMatrix(sphereLocation.x, sphereLocation.y, sphereLocation.z) * Mat4x4().scalingMatrix(sphereRadius)).data);
 		sphere.draw(defaultShader);
+
+
+		debugLines.vertices.push_back(camera.position + Vector3{ std::sinf(camera.yaw)*0.2f, -sphereRadius + 0.1f, std::cosf(camera.yaw) * 0.2f });
+		debugLines.vertices.push_back(camera.position + cameraVelocity + Vector3{ std::sinf(camera.yaw) * 0.2f, -sphereRadius+0.1f, std::cosf(camera.yaw) * 0.2f });
+		basicShader.bind();
+		basicShader.setMat4fv("camera", cameraViewMatrix.data);
+		debugLines.drawLines();
+		debugLines.vertices.clear();
+
+		std::cout << glGetError() << "\n";
 
 		//DRAW THE DEBUG FLOOR
 		//defaultShader.setMat4fv("camera", cameraViewMatrix.data);

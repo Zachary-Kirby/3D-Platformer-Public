@@ -172,13 +172,13 @@ if ((position - closestPoint).length() <= radius)
 */
 
 
-//make sure direction is normalized
+//make sure direction is normalized. This function only fails when the ray and the plane are parallel
 CollisionPoint rayPlaneIntersection(Vector3 start, Vector3 direction, Vector3 planePoint, Vector3 planeNormal)
 {
 	CollisionPoint intersectionPoint;
-	if (planePoint.dot(planeNormal) == 0) //there is also the case where the start point lies in the plane but That will be too rare
-		return CollisionPoint();
-	float t = (start - planePoint).dot(planeNormal) / (direction.dot(planeNormal));
+	if (direction.dot(planeNormal) == 0) //this may be a floating point problem...
+		return CollisionPoint(); //there is also the case where the start point lies in the plane but That will be too rare
+	float t = (planePoint - start).dot(planeNormal) / (direction.dot(planeNormal));
 	intersectionPoint.position = start + direction * t;
 	intersectionPoint.distance = t;
 	intersectionPoint.failed = false;

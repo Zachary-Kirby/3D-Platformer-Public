@@ -144,6 +144,7 @@
     <ClCompile Include="source\colliders.cpp" />
     <ClCompile Include="source\fileloader.cpp" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\math\quaternion.h" />
     <ClCompile Include="source\model.cpp" />
     <ClCompile Include="source\gl3w.c" />
     <ClCompile Include="source\shader.cpp" />
