@@ -24,6 +24,10 @@ struct Vector3
 	}
 };
 
+//this is used for things like canceling velocity in the direction of a floor using the floor normal vector
+Vector3 cancelOppositeComponent(Vector3 direction, Vector3 vector);
+
+
 
 struct Vector2
 {

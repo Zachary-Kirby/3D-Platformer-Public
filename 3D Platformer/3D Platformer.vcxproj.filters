@@ -36,6 +36,9 @@
     <ClCompile Include="source\math\quaternion.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\math\vector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\fileloader.h">

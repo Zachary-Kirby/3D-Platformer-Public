@@ -5,12 +5,13 @@
 
 MeshCollider::MeshCollider(const Model& modelRefrence)
 {
-	//TODO normals from the mesh may be unreliable so finding it myself is preferable
+	
 	//go through every mesh in the model and construct a more compact version with only using the positions and normals
 	//TODO there is a bug where indices get mismatched because there are mutliple meshes and indices are relitive to inside their respective mesh...
 	for (unsigned int meshId{0}; meshId < modelRefrence.meshes.size(); meshId++)
 	{
 		const Mesh& mesh = modelRefrence.meshes[meshId];
+		std::cout << mesh.vertices.size();
 		for (unsigned int i{0}; i < mesh.indices.size(); i++)
 		{
 			indices.push_back(mesh.indices[i]);
@@ -94,6 +95,13 @@ CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
 		Vector3 line23Normal = (normal).cross(point3 - point2).normalized();
 		Vector3 line31Normal = (normal).cross(point1 - point3).normalized();
 		
+		//the snapping algorithm isn't enough by itself because it may sometimes lead to floating points away from the triangle, to avoid this these checks are here.
+		if (line12Normal.dot(position - point1) > radius)
+			continue;
+		if (line23Normal.dot(position - point2) > radius)
+			continue;
+		if (line31Normal.dot(position - point3) > radius)
+			continue;
 		
 		float line12Distance = line12Normal.dot(closestPoint - point1);
 		float farthestOppositeLine12 = line12Normal.dot(point3 - point1);
