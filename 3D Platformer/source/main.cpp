@@ -333,7 +333,8 @@ int main(int argc, char** argv)
 				{
 				
 					Vector3 pushDirection = (camera.position - collisionPoint.position) / distance;
-					bool onEdge = std::acosf(pushDirection.dot(collisionPoint.normal)) >= radians(0.1f);
+					float pushAngle = std::acosf(pushDirection.dot(collisionPoint.normal));
+					bool onEdge = pushAngle >= radians(0.1f) && pushAngle <= radians(179.0f);
 					//note the I can tell if the point lies on the boundary by doing a check between the normal of the triangle and the push direction. If they don't point the same directon it's on the edge
 					if (pushDirection.dot(cameraVelocity) < 0)
 					{
@@ -356,14 +357,18 @@ int main(int argc, char** argv)
 						else
 						{
 							//only make it slippery off the edge not along the edge
+							//TODO move the slowdown code outside the loop so it only happens once a frame
 							if (onEdge)
 							{
-								Vector3 edgeNormal = Vector3{ pushDirection.x, 0, pushDirection.z }.normalized();
-								Vector3 edgeDirection = Vector3{-pushDirection.z, 0, pushDirection.x}.normalized();
-								cameraVelocity -= edgeDirection * edgeDirection.dot(cameraVelocity) * 0.8f;
-								if (edgeNormal.dot(cameraVelocity) < 0)
-									cameraVelocity -= edgeNormal * edgeNormal.dot(cameraVelocity) * 0.8f;
-								playerFriction = false;
+								if (pushDirection.y > 0)
+								{
+									//Vector3 edgeNormal = Vector3{ pushDirection.x, 0, pushDirection.z }.normalized();
+									Vector3 edgeDirection = Vector3{-pushDirection.z, 0, pushDirection.x}.normalized();
+									//cameraVelocity -= edgeDirection * edgeDirection.dot(cameraVelocity) * 0.2f;
+									//if (edgeNormal.dot(cameraVelocity) < 0)
+									//	cameraVelocity -= edgeNormal * edgeNormal.dot(cameraVelocity) * 0.8f;
+									playerFriction = false;
+								}
 							}
 							cameraVelocity -= pushDirection.dot(cameraVelocity) * pushDirection;
 							camera.position -= pushDirection * (distance - sphereRadius);

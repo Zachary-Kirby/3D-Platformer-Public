@@ -73,7 +73,7 @@ bool MeshCollider::isCollidingWithSphere(Vector3 position, float radius)
 	}
 	return false;
 }
-
+/*
 CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
 {
 	CollisionPoint closestCollisionPoint;
@@ -144,7 +144,75 @@ CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
 	
 	return closestCollisionPoint;
 }
+*/
 
+static Vector3 castPointToLineSegment(Vector3 point, Vector3 start, Vector3 end)
+{
+	Vector3 lineVector = end - start;
+	float length = lineVector.length();
+	Vector3 direction = (end - start)/length;
+	float t = std::clamp(direction.dot(point - start), 0.0f, length);
+	return start + direction * t;
+}
+
+//dealing with the closest probably helps
+CollisionPoint MeshCollider::collideSphere(Vector3 position, float radius)
+{
+	CollisionPoint closestCollisionPoint;
+
+	for (unsigned int i{ 0 }; i < indices.size(); i += 3)
+	{
+		Vector3& point1 = vertices[indices[i]].position;
+		Vector3& point2 = vertices[indices[i + 1]].position;
+		Vector3& point3 = vertices[indices[i + 2]].position;
+		Vector3& normal = vertices[indices[i]].normal;
+
+		float distanceFromSurface = normal.dot(position - point1);
+		if (abs(distanceFromSurface) > radius)
+			continue;
+
+		//snap to a point over one of the sides
+		Vector3 closestPoint = position - normal * distanceFromSurface; //starts out with a point on the plane that contains the triangle
+		Vector3 line12Normal = (normal).cross(point2 - point1).normalized();//all can be precalculated
+		Vector3 line23Normal = (normal).cross(point3 - point2).normalized();
+		Vector3 line31Normal = (normal).cross(point1 - point3).normalized();
+
+		//check if closest point on plane is in triangle
+		//if any of these are positive the sphere either doesn't collide or is colliding with an edge
+		float line12Distance{ line12Normal.dot(closestPoint - point1)};
+		if (line12Distance > radius)
+			continue;
+		float line23Distance{ line23Normal.dot(closestPoint - point2)};
+		if (line23Distance > radius)
+			continue;
+		float line31Distance{ line31Normal.dot(closestPoint - point3)};
+		if (line31Distance > radius)
+			continue;
+
+		//if sphere is not over the triangle the closest point is on the edge or is a vertex
+		if (!(line12Distance <= 0.0f && line23Distance <= 0.0f && line31Distance <= 0.0f))
+		{
+			if (line12Distance > 0.0f)
+				closestPoint = castPointToLineSegment(closestPoint, point1, point2);
+			else if (line23Distance > 0.0f)
+				closestPoint = castPointToLineSegment(closestPoint, point2, point3);
+			else
+				closestPoint = castPointToLineSegment(closestPoint, point3, point1);
+		}
+
+		//compare to previous triangles closest points and save the closer one
+		float closestDistance = (position - closestPoint).length();
+		if (closestDistance < closestCollisionPoint.distance || closestCollisionPoint.distance < 0)
+		{
+			closestCollisionPoint.position = closestPoint;
+			closestCollisionPoint.distance = closestDistance;
+			closestCollisionPoint.normal = normal;
+			closestCollisionPoint.failed = false;
+		}
+	}
+
+	return closestCollisionPoint;
+}
 
 /*
 this is just a less efficient way of doing the same thing... This may be useful for other the final collision resolution though
